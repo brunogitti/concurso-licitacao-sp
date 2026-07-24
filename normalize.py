@@ -1,9 +1,10 @@
 """
-Este modulo traduz o dict cru de capture_pciconcursos.py pro schema comum
-usado no resto do projeto: orgao, cidade, uf, cargo, vagas, salario_ate,
-nivel, data_prazo, data_incerta, link_edital, slug_origem. Nao sabe fazer
-scraping nem decidir se um concurso ainda vale a pena alertar (isso e
-trabalho de filtro.py); so sabe traduzir formato.
+Este modulo traduz o dict cru de capture_pciconcursos.py ou
+capture_noticias.py pro schema comum usado no resto do projeto: orgao,
+cidade, uf, cargo, vagas, salario_ate, nivel, data_prazo, data_incerta,
+link_edital, slug_origem, fonte_deteccao. Nao sabe fazer scraping nem
+decidir se um concurso ainda vale a pena alertar (isso e trabalho de
+filtro.py); so sabe traduzir formato.
 """
 
 import re
@@ -55,7 +56,14 @@ def extrair_vagas_e_salario(vagas_e_salario_bruto):
 
 
 def normalizar(concurso_bruto):
-    """Traduz um dict cru de capture_pciconcursos.py pro schema comum do projeto."""
+    """Traduz um dict cru de capture_pciconcursos.py ou capture_noticias.py pro schema comum do projeto.
+
+    fonte_deteccao distingue as duas fontes: "pagina_por_cargo" (padrao,
+    /vagas/{slug}) ou "texto_completo" (varredura de noticia por
+    capture_noticias.py) - concurso_bruto so tem essa chave quando vem da
+    segunda fonte, entao o padrao cobre a primeira sem precisar mexer em
+    capture_pciconcursos.py.
+    """
     vagas, salario_ate = extrair_vagas_e_salario(concurso_bruto.get("vagas_e_salario"))
     data_prazo, data_incerta = filtro.parsear_data_bruta(concurso_bruto.get("data_bruta", ""))
 
@@ -71,4 +79,5 @@ def normalizar(concurso_bruto):
         "data_incerta": data_incerta,
         "link_edital": concurso_bruto.get("link_edital"),
         "slug_origem": concurso_bruto.get("slug_origem"),
+        "fonte_deteccao": concurso_bruto.get("fonte_deteccao", "pagina_por_cargo"),
     }

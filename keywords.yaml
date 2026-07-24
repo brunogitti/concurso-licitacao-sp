@@ -15,7 +15,17 @@
 #
 # estados_monitorados: UFs cujas linhas de /vagas/{slug} entram na
 #   captura; o resto do historico (outros estados) e descartado ja na
-#   camada de captura.
+#   camada de captura. Tambem usado por capture_noticias.py pra filtrar
+#   noticias das regioes Sudeste (SP/RJ/MG/ES) e Sul (PR/RS/SC).
+#
+# termos_busca_texto: frases exatas (nao slugs) usadas por capture_noticias.py
+#   pra varrer o texto completo das noticias das regioes Sudeste e Sul
+#   procurando cargo de licitacao mencionado no meio de uma lista longa de
+#   "Varios Cargos" - esses concursos costumam nao ficar indexados em
+#   /vagas/{slug} (o PCI Concursos parece so taguear um subconjunto dos
+#   cargos de cada edital, nao todos). A busca e case-insensitive e sem
+#   acento, mas compara a frase inteira (nao token solto), entao o texto
+#   aqui deve ser a forma como o cargo aparece de verdade no edital.
 
 slugs_cargo:
   - pregoeiro
@@ -34,3 +44,14 @@ estados_monitorados:
   - SP
   - MG
   - PR
+
+termos_busca_texto:
+  - "Pregoeiro"
+  - "Agente de Contratação"
+  - "Gerente de Compras e Licitação"
+  - "Oficial de Compras e Licitação"
+  - "Agente de Compras"
+  - "Assistente de Licitação"
+  - "Analista de Licitação"
+  - "Analista de Licitações e Contratos"
+  - "Gestor de Contratos"

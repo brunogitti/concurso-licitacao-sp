@@ -8,6 +8,7 @@ NexLicit) conforme cada camada for implementada.
 """
 
 import capture_api
+import capture_noticias
 import capture_pciconcursos
 import normalize
 import filtro
@@ -17,5 +18,5 @@ import main
 
 
 def test_modulos_do_scaffold_importam_sem_erro():
-    assert capture_pciconcursos and capture_api and normalize
+    assert capture_pciconcursos and capture_api and capture_noticias and normalize
     assert filtro and banco and enviar_resumo and main

@@ -5,6 +5,7 @@ descartavel (tmp_path do pytest), nunca contra concursos.db de verdade.
 Roda com: python -m pytest tests/test_banco.py -v
 """
 
+import sqlite3
 from datetime import date
 
 import banco
@@ -68,6 +69,62 @@ def test_fluxo_normal_marca_ja_alertado_igual_a_zero_por_padrao(tmp_path):
     ja_alertado = conexao.execute("SELECT ja_alertado FROM concursos").fetchone()[0]
     conexao.close()
     assert ja_alertado == 0
+
+
+def test_concurso_ja_existe_confirma_link_edital_ja_salvo(tmp_path):
+    conexao = banco.conectar(str(tmp_path / "teste.db"))
+    banco.salvar_concursos_novos(conexao, [_concurso_de_teste(link_edital="https://.../ja-visto")])
+
+    ja_existe = banco.concurso_ja_existe(conexao, "https://.../ja-visto")
+    nao_existe = banco.concurso_ja_existe(conexao, "https://.../nunca-visto")
+    conexao.close()
+
+    assert ja_existe is True
+    assert nao_existe is False
+
+
+def test_fonte_deteccao_padrao_e_pagina_por_cargo(tmp_path):
+    conexao = banco.conectar(str(tmp_path / "teste.db"))
+    banco.salvar_concursos_novos(conexao, [_concurso_de_teste()])
+    fonte_deteccao = conexao.execute("SELECT fonte_deteccao FROM concursos").fetchone()[0]
+    conexao.close()
+    assert fonte_deteccao == "pagina_por_cargo"
+
+
+def test_fonte_deteccao_texto_completo_e_gravada(tmp_path):
+    conexao = banco.conectar(str(tmp_path / "teste.db"))
+    banco.salvar_concursos_novos(conexao, [_concurso_de_teste(fonte_deteccao="texto_completo")])
+    fonte_deteccao = conexao.execute("SELECT fonte_deteccao FROM concursos").fetchone()[0]
+    conexao.close()
+    assert fonte_deteccao == "texto_completo"
+
+
+def test_conectar_migra_banco_antigo_sem_a_coluna_fonte_deteccao(tmp_path):
+    # simula um concursos.db criado antes do Passo 4 (schema do Passo 3,
+    # sem fonte_deteccao), garante que conectar() adiciona a coluna sem
+    # perder o banco existente.
+    caminho = str(tmp_path / "antigo.db")
+    conexao_antiga = sqlite3.connect(caminho)
+    conexao_antiga.execute(
+        """
+        CREATE TABLE concursos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            orgao TEXT, cidade TEXT, uf TEXT NOT NULL, cargo TEXT,
+            vagas INTEGER, salario_ate REAL, nivel TEXT, data_prazo TEXT,
+            data_incerta INTEGER NOT NULL DEFAULT 0, link_edital TEXT UNIQUE,
+            slug_origem TEXT, fonte TEXT NOT NULL DEFAULT 'pciconcursos',
+            data_captura TEXT NOT NULL, ja_alertado INTEGER NOT NULL DEFAULT 0
+        )
+        """
+    )
+    conexao_antiga.commit()
+    conexao_antiga.close()
+
+    conexao = banco.conectar(caminho)
+    colunas = {linha[1] for linha in conexao.execute("PRAGMA table_info(concursos)")}
+    conexao.close()
+
+    assert "fonte_deteccao" in colunas
 
 
 def test_buscar_nao_alertados_devolve_so_os_pendentes(tmp_path):

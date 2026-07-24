@@ -86,3 +86,16 @@ def test_data_prazo_e_data_incerta_vem_do_parsear_data_bruta():
     resultado = normalize.normalizar(_concurso_bruto_de_teste())
     assert resultado["data_prazo"] == datetime.date(2025, 7, 24)
     assert resultado["data_incerta"] is False
+
+
+def test_fonte_deteccao_padrao_e_pagina_por_cargo_quando_ausente():
+    # concurso_bruto de capture_pciconcursos.py nunca tem essa chave
+    resultado = normalize.normalizar(_concurso_bruto_de_teste())
+    assert resultado["fonte_deteccao"] == "pagina_por_cargo"
+
+
+def test_fonte_deteccao_repassa_texto_completo_quando_presente():
+    # concurso_bruto de capture_noticias.py sempre define essa chave
+    bruto = _concurso_bruto_de_teste(fonte_deteccao="texto_completo")
+    resultado = normalize.normalizar(bruto)
+    assert resultado["fonte_deteccao"] == "texto_completo"

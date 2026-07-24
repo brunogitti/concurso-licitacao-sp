@@ -16,6 +16,7 @@ import argparse
 import logging
 
 import banco
+import capture_noticias
 import capture_pciconcursos
 import enviar_resumo
 import filtro
@@ -29,13 +30,32 @@ def configurar_logging():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
 
+def capturar_todas_as_fontes():
+    """Roda as duas fontes de captura e junta o resultado bruto (schema de capture_pciconcursos.py).
+
+    capture_pciconcursos.py cobre /vagas/{slug}; capture_noticias.py cobre
+    a lacuna dos concursos "Varios Cargos" nao indexados por cargo (ver
+    docstring de capture_noticias.py). Falha na segunda fonte (rede,
+    keywords.yaml sem termos_busca_texto, etc) e logada e a captura segue
+    so com a primeira, nunca derruba o processo inteiro.
+    """
+    concursos = capture_pciconcursos.capturar()
+
+    try:
+        concursos = concursos + capture_noticias.capturar()
+    except Exception as erro:  # noqa: BLE001 - falha na 2a fonte nao pode derrubar a 1a
+        logger.error("Falha na captura por texto completo (capture_noticias), seguindo so com capture_pciconcursos: %s", erro)
+
+    return concursos
+
+
 def bootstrap():
-    """Roda a captura inteira e salva tudo no banco ja marcado como alertado (ja_alertado=1), sem enviar e-mail.
+    """Roda a captura inteira (as duas fontes) e salva tudo no banco ja marcado como alertado (ja_alertado=1), sem enviar e-mail.
 
     Uso: python main.py --bootstrap. Ver docstring do modulo pra entender
     por que esse passo existe antes de ligar o cron de verdade.
     """
-    concursos_brutos = capture_pciconcursos.capturar()
+    concursos_brutos = capturar_todas_as_fontes()
     concursos_normalizados = [normalize.normalizar(concurso) for concurso in concursos_brutos]
 
     conexao = banco.conectar()
@@ -49,14 +69,14 @@ def bootstrap():
 
 
 def capturar_normalizar_e_filtrar():
-    """Roda captura + normalizacao + filtro. Devolve so os concursos validos (schema comum de normalize.py).
+    """Roda captura (as duas fontes) + normalizacao + filtro. Devolve so os concursos validos (schema comum de normalize.py).
 
-    O filtro por UF (estados_monitorados) ja aconteceu dentro de
-    capture_pciconcursos.py (ver keywords.yaml); aqui so falta aplicar
+    O filtro por UF (estados_monitorados) ja aconteceu dentro das duas
+    funcoes de captura (ver keywords.yaml); aqui so falta aplicar
     filtro.concurso_esta_valido (data dentro da janela + sem texto de
     cancelamento).
     """
-    concursos_brutos = capture_pciconcursos.capturar()
+    concursos_brutos = capturar_todas_as_fontes()
     concursos_normalizados = [normalize.normalizar(concurso) for concurso in concursos_brutos]
     return [c for c in concursos_normalizados if filtro.concurso_esta_valido(c)]
 
