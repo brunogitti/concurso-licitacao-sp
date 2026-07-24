@@ -1,0 +1,51 @@
+name: Monitorar concursos
+
+on:
+  schedule:
+    - cron: "0 10 * * *" # 7h no horario de Brasilia (UTC-3, sem horario de verao)
+  workflow_dispatch: {} # permite rodar manualmente pela interface do GitHub, pra testar
+
+jobs:
+  monitorar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # precisa poder empurrar (push) pra branch "data" no final
+    steps:
+      - name: Baixar o codigo do repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Restaurar o banco de concursos ja vistos (branch data)
+        run: |
+          if git fetch origin data 2>/dev/null && git show origin/data:concursos.db > concursos.db 2>/dev/null; then
+            echo "Banco restaurado da branch data (execucao anterior)."
+          else
+            echo "Branch data ainda nao tem banco salvo, comecando do zero."
+            rm -f concursos.db
+          fi
+
+      - name: Rodar os testes automatizados
+        run: python -m pytest tests/ -q
+
+      - name: Capturar concursos e enviar e-mail
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: python main.py --enviar-email "${{ secrets.EMAIL_DESTINATARIO }}"
+
+      - name: Publicar o banco atualizado na branch data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B data
+          git add -f concursos.db
+          git commit -m "Atualiza banco de concursos ($(date -u +'%d/%m/%Y %H:%M UTC'))" --allow-empty
+          git push --force origin data

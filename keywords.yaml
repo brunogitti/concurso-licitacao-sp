@@ -1,0 +1,36 @@
+# concurso-licitacao-sp — cargos e estados monitorados no PCI Concursos
+# Este arquivo e lido em tempo de execucao. Editar aqui muda o que o
+# monitor captura, sem tocar em uma linha de codigo Python.
+#
+# slugs_cargo: cada item e o slug de um cargo ja normalizado pelo proprio
+#   PCI Concursos (a pagina https://www.pciconcursos.com.br/vagas/{slug}
+#   lista o historico completo de concursos com vaga pra esse cargo). Como
+#   o cargo ja vem exato da fonte, nao ha risco de falso positivo tipo
+#   termo livre ("administracao") e nao e necessario calibrar com
+#   --testar-termo, diferente do Radar NexLicit.
+#
+#   Se surgir um cargo novo com nomenclatura diferente (prefeitura
+#   inventa nome), descobrir o slug em https://www.pciconcursos.com.br/cargos/{termo}
+#   e adicionar aqui manualmente.
+#
+# estados_monitorados: UFs cujas linhas de /vagas/{slug} entram na
+#   captura; o resto do historico (outros estados) e descartado ja na
+#   camada de captura.
+
+slugs_cargo:
+  - pregoeiro
+  - agente-de-contratacao
+  - agente-de-contratacao-licitacao-pregoeiro
+  - gerente-de-compras-e-licitacao
+  - oficial-de-compras-e-licitacao
+  - agente-de-compras
+  - agente-parlamentar-setor-de-compras-licitacoes-e-contratos
+  - assistente-de-licitacao
+  - analista-de-licitacao
+  - analista-de-licitacoes-e-contratos
+  - gestor-de-contratos
+
+estados_monitorados:
+  - SP
+  - MG
+  - PR

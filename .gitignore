@@ -1,0 +1,21 @@
+# Ambiente virtual do Python. Cada pessoa cria o dela na própria máquina,
+# não faz sentido guardar isso no repositório.
+venv/
+
+# Banco SQLite com os concursos já capturados. Dado gerado, não código.
+# É persistido entre execuções do GitHub Actions por fora (branch "data").
+concursos.db
+
+# Arquivos que o Python cria sozinho ao rodar (cache de bytecode).
+__pycache__/
+*.pyc
+
+# Cache do pytest.
+.pytest_cache/
+
+# Segredos (senha de e-mail, chave de API, etc), quando existirem.
+.env
+
+# Configuração local do Claude Code (ferramenta de IA usada no
+# desenvolvimento). É configuração de máquina, não faz parte do projeto.
+.claude/
