@@ -49,3 +49,5 @@ jobs:
           git add -f concursos.db
           git commit -m "Atualiza banco de concursos ($(date -u +'%d/%m/%Y %H:%M UTC'))" --allow-empty
           git push --force origin data
+
+          
