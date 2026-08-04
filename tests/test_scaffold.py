@@ -7,7 +7,6 @@ modulo, com helper local "_<coisa>_de_teste()", igual a convencao do Radar
 NexLicit) conforme cada camada for implementada.
 """
 
-import capture_api
 import capture_noticias
 import capture_pciconcursos
 import normalize
@@ -18,5 +17,5 @@ import main
 
 
 def test_modulos_do_scaffold_importam_sem_erro():
-    assert capture_pciconcursos and capture_api and capture_noticias and normalize
+    assert capture_pciconcursos and capture_noticias and normalize
     assert filtro and banco and enviar_resumo and main

@@ -94,8 +94,8 @@ Python 3.12 · requests · BeautifulSoup4 + lxml · PyYAML · python-dotenv · S
 ## Limitações conhecidas
 
 - Scraping é frágil por natureza: se o PCI Concursos mudar a estrutura do HTML, o parser quebra (cada slug/notícia é tratado isoladamente para que uma falha não derrube a captura inteira).
-- [`capture_api.py`](capture_api.py) é uma terceira fonte planejada (API não oficial de concursos de SP) ainda não implementada — fica como próximo passo.
 - Sem SLA de nenhuma das fontes; o projeto assume falha parcial como normal e loga em vez de derrubar o processo.
+- Já existiu uma terceira fonte planejada (API não oficial `concursos-api.deno.dev`), removida porque o serviço saiu do ar em jul/2026 (a plataforma Deno Deploy Classic foi desativada).
 
 ## Licença
 
